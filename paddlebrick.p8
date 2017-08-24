@@ -52,26 +52,50 @@ function collision_check(x, y, dx, dy)
 end
 
 function collision_paddle(x, y, dx, dy, paddle)
-    local a = {x = paddle.x + paddle.padding, y = paddle.y + paddle.padding}
-    local b = {x = paddle.x + paddle.width + paddle.padding, y = paddle.y + paddle.height + paddle.padding}
+    -- top left corner of the paddle.
+    local a = {
+      x = paddle.x + paddle.padding,
+      y = paddle.y + paddle.padding
+    }
 
-    if a.x < x and x < b.x and a.y < y and y < b.y then
-        return {x = 0, y = 1}
-    end
+    -- bottom right corner of the paddle.
+    local b = {
+        x = paddle.x + paddle.width + paddle.padding,
+        y = paddle.y + paddle.height + paddle.padding
+    }
+
+    x += dx
+    y += dy
+
+    return a.x < x and x < b.x and a.y < y and y < b.y
+end
+
+function paddle_bounce_vector(ball, paddle)
+    local x = ball.x + ball.diameter / 2
+    local y = ball.y + ball.diameter / 2
+
+    local vy = (y - (paddle.y + paddle.height / 2)) / (paddle.height)
+
+    if (x - paddle.x > 0) vy *= 1
+
+    return {
+      y = 1,
+      x = -vy
+    }
 end
 
 function collision_ball(ball)
     local collision = collision_paddle(ball.x, ball.y, ball.dx, ball.dy, p1)
-    if (collision) return collision
+    if (collision) return paddle_bounce_vector(ball, p1)
 
     collision = collision_paddle(ball.x, ball.y + ball.diameter, ball.dx, ball.dy, p1)
-    if (collision) return collision
+    if (collision) return paddle_bounce_vector(ball, p1)
 
     collision = collision_paddle(ball.x + ball.diameter, ball.y, ball.dx, ball.dy, p2)
-    if (collision) return collision
+    if (collision) return paddle_bounce_vector(ball, p2)
 
     collision = collision_paddle(ball.x + ball.diameter, ball.y + ball.diameter, ball.dx, ball.dy, p2)
-    if (collision) return collision
+    if (collision) return paddle_bounce_vector(ball, p2)
 
     collision = collision_check(ball.x, ball.y, ball.dx, ball.dy)
     if (collision) return collision
@@ -105,9 +129,9 @@ function _update60()
     ball.y += ball.dy
 
     if (btn(2, 0)) p1.y -= p1.speed
-	if (btn(3, 0)) p1.y += p1.speed
-	if (btn(2, 1)) p2.y -= p2.speed
-	if (btn(3, 1)) p2.y += p2.speed
+  if (btn(3, 0)) p1.y += p1.speed
+  if (btn(2, 1)) p2.y -= p2.speed
+  if (btn(3, 1)) p2.y += p2.speed
 
     local collision_vector = collision_ball(ball)
     if collision_vector then
