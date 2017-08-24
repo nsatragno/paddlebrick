@@ -129,9 +129,9 @@ function _update60()
     ball.y += ball.dy
 
     if (btn(2, 0)) p1.y -= p1.speed
-  if (btn(3, 0)) p1.y += p1.speed
-  if (btn(2, 1)) p2.y -= p2.speed
-  if (btn(3, 1)) p2.y += p2.speed
+    if (btn(3, 0)) p1.y += p1.speed
+    if (btn(2, 1)) p2.y -= p2.speed
+    if (btn(3, 1)) p2.y += p2.speed
 
     local collision_vector = collision_ball(ball)
     if collision_vector then
