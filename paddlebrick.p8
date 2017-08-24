@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
 -- paddlebrick
--- coding and art - toti. breakage of eggs - nina
+-- toti and nina
 map_offset = {x = 2, y = 2}
 flags = {solid = 0, visible = 1, goal_p1 = 2, goal_p2 = 3}
 function init()
