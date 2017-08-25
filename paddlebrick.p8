@@ -6,169 +6,199 @@ __lua__
 map_offset = {x = 2, y = 2}
 flags = {solid = 0, visible = 1, goal_p1 = 2, goal_p2 = 3, destroyable = 4}
 function init()
-    base_speed = 1
-    ball_speed = 2.5
-    p1 = {x = 0, y = 63, width = 4, height = 16, speed = base_speed, sprite = 1, padding = 4, score = 0}
-    p2 = {x = 120, y = 63, width = 4, height = 16, speed = base_speed, sprite = 1, padding = 0, score = 0}
-    ball = {x = 63, y = 67, dx = ball_speed, dy = 0, diameter = 8, sprite = 2}
+  base_speed = 1
+  ball_speed = 2.5
+  p1 = {
+    x = 0,
+    y = 63,
+    width = 4,
+    height = 16,
+    speed = base_speed,
+    sprite = 1,
+    padding = 4,
+    score = 0
+  }
+  p2 = {
+    x = 120,
+    y = 63,
+    width = 4,
+    height = 16,
+    speed = base_speed,
+    sprite = 1,
+    padding = 0,
+    score = 0
+  }
+  ball = {
+    x = 63,
+    y = 67,
+    dx = ball_speed,
+    dy = 0,
+    diameter = 8,
+    sprite = 2
+  }
 end
 
 init()
 
 function flag_on(flags, flag)
-    return flr(shr(flags, flag) % 2) == 1
+  return flr(shr(flags, flag) % 2) == 1
 end
 
 function collision_flag(x, y, flag)
-    local flag = fget(mget(flr(x / 8 + map_offset.x), flr(y / 8 + map_offset.y)))
-    if (flag_on(flag, flags.solid)) return flag
+  local flag = fget(mget(flr(x / 8 + map_offset.x), flr(y / 8 + map_offset.y)))
+  if (flag_on(flag, flags.solid)) return flag
 end
 
 function solid(x, y)
-    return collision_flag(x, y, flags.solid)
+  return collision_flag(x, y, flags.solid)
 end
 
 function goal_check(ball)
-    if (goal_p1(ball.x, ball.y)) return 1
-    if (goal_p1(ball.x + ball.diameter, ball.y)) return 1
-    if (goal_p1(ball.x, ball.y + ball.diameter)) return 1
-    if (goal_p1(ball.x + ball.diameter, ball.y + ball.diameter)) return 1
+  if (goal_p1(ball.x, ball.y)) return 1
+  if (goal_p1(ball.x + ball.diameter, ball.y)) return 1
+  if (goal_p1(ball.x, ball.y + ball.diameter)) return 1
+  if (goal_p1(ball.x + ball.diameter, ball.y + ball.diameter)) return 1
 
-    if (goal_p2(ball.x, ball.y)) return 2
-    if (goal_p2(ball.x + ball.diameter, ball.y)) return 2
-    if (goal_p2(ball.x, ball.y + ball.diameter)) return 2
-    if (goal_p2(ball.x + ball.diameter, ball.y + ball.diameter)) return 2
+  if (goal_p2(ball.x, ball.y)) return 2
+  if (goal_p2(ball.x + ball.diameter, ball.y)) return 2
+  if (goal_p2(ball.x, ball.y + ball.diameter)) return 2
+  if (goal_p2(ball.x + ball.diameter, ball.y + ball.diameter)) return 2
 end
 
 function collision_check(x, y, dx, dy)
-    local vertical_collision = solid(x, y + dy)
-    local horizontal_collision = solid(x + dx, y)
+  local vertical_collision = solid(x, y + dy)
+  local horizontal_collision = solid(x + dx, y)
 
-    if (not vertical_collision and not horizontal_collision) return nil
-    if (vertical_collision and not horizontal_collision) return {x = 1, y = 0, flags = vertical_collision}
-    if (not vertical_collision and horizontal_collision) return {x = 0, y = 1, flags = horizontal_collision}
-    if (dx * dy > 0) return {x = -1, y = -1, flags = horizontal_collision}
-    return {x = 1, y = 1, flags = horizontal_collision}
+  if (not vertical_collision and not horizontal_collision) return nil
+  if (vertical_collision and not horizontal_collision) return { x = 1, y = 0, flags = vertical_collision }
+  if (not vertical_collision and horizontal_collision) return { x = 0, y = 1, flags = horizontal_collision }
+  if (dx * dy > 0) return { x = -1, y = -1, flags = horizontal_collision }
+
+  return {
+    x = 1,
+    y = 1,
+    flags = horizontal_collision
+  }
 end
 
 function collision_paddle(x, y, dx, dy, paddle)
-    -- top left corner of the paddle.
-    local a = {
-      x = paddle.x + paddle.padding,
-      y = paddle.y + paddle.padding
-    }
+  -- top left corner of the paddle.
+  local a = {
+    x = paddle.x + paddle.padding,
+    y = paddle.y + paddle.padding
+  }
 
-    -- bottom right corner of the paddle.
-    local b = {
-        x = paddle.x + paddle.width + paddle.padding,
-        y = paddle.y + paddle.height + paddle.padding
-    }
+  -- bottom right corner of the paddle.
+  local b = {
+    x = paddle.x + paddle.width + paddle.padding,
+    y = paddle.y + paddle.height + paddle.padding
+  }
 
-    x += dx
-    y += dy
+  x += dx
+  y += dy
 
-    return a.x < x and x < b.x and a.y < y and y < b.y
+  return a.x < x and x < b.x and a.y < y and y < b.y
 end
 
 function paddle_bounce_vector(ball, paddle)
-    local x = ball.x + ball.diameter / 2
-    local y = ball.y + ball.diameter / 2
+  local x = ball.x + ball.diameter / 2
+  local y = ball.y + ball.diameter / 2
 
-    local vy = (y - (paddle.y + paddle.height / 2)) / (paddle.height)
+  local vy = (y - (paddle.y + paddle.height / 2)) / (paddle.height)
 
-    if (x - paddle.x > 0) vy *= 1
+  if (x - paddle.x > 0) vy *= 1
 
-    return {
-      y = 1,
-      x = -vy
-    }
+  return {
+    y = 1,
+    x = -vy
+  }
 end
 
 function collision_ball(ball)
-    local collision = collision_paddle(ball.x, ball.y, ball.dx, ball.dy, p1)
-    if (collision) return paddle_bounce_vector(ball, p1)
+  local collision = collision_paddle(ball.x, ball.y, ball.dx, ball.dy, p1)
+  if (collision) return paddle_bounce_vector(ball, p1)
 
-    collision = collision_paddle(ball.x, ball.y + ball.diameter, ball.dx, ball.dy, p1)
-    if (collision) return paddle_bounce_vector(ball, p1)
+  collision = collision_paddle(ball.x, ball.y + ball.diameter, ball.dx, ball.dy, p1)
+  if (collision) return paddle_bounce_vector(ball, p1)
 
-    collision = collision_paddle(ball.x + ball.diameter, ball.y, ball.dx, ball.dy, p2)
-    if (collision) return paddle_bounce_vector(ball, p2)
+  collision = collision_paddle(ball.x + ball.diameter, ball.y, ball.dx, ball.dy, p2)
+  if (collision) return paddle_bounce_vector(ball, p2)
 
-    collision = collision_paddle(ball.x + ball.diameter, ball.y + ball.diameter, ball.dx, ball.dy, p2)
-    if (collision) return paddle_bounce_vector(ball, p2)
+  collision = collision_paddle(ball.x + ball.diameter, ball.y + ball.diameter, ball.dx, ball.dy, p2)
+  if (collision) return paddle_bounce_vector(ball, p2)
 
-    collision = collision_check(ball.x, ball.y, ball.dx, ball.dy)
-    if (collision) return collision
+  collision = collision_check(ball.x, ball.y, ball.dx, ball.dy)
+  if (collision) return collision
 
-    collision = collision_check(ball.x + ball.diameter, ball.y, ball.dx, ball.dy)
-    if (collision) return collision
+  collision = collision_check(ball.x + ball.diameter, ball.y, ball.dx, ball.dy)
+  if (collision) return collision
 
-    collision = collision_check(ball.x, ball.y + ball.diameter, ball.dx, ball.dy)
-    if (collision) return collision
+  collision = collision_check(ball.x, ball.y + ball.diameter, ball.dx, ball.dy)
+  if (collision) return collision
 
-    collision = collision_check(ball.x + ball.diameter, ball.y + ball.diameter, ball.dx, ball.dy)
-    return collision
+  collision = collision_check(ball.x + ball.diameter, ball.y + ball.diameter, ball.dx, ball.dy)
+  return collision
 end
 
 function bounce(ball, collision)
-    local c = 2 * (ball.dx * collision.x + ball.dy * collision.y) /
-        (collision.x * collision.x + collision.y * collision.y)
-    ball.dx = c * collision.x - ball.dx
-    ball.dy = c * collision.y - ball.dy
+  local c = 2 * (ball.dx * collision.x + ball.dy * collision.y) /
+    (collision.x * collision.x + collision.y * collision.y)
+  ball.dx = c * collision.x - ball.dx
+  ball.dy = c * collision.y - ball.dy
 end
 
 function reset_ball(ball, dir)
-    ball.x = 63
-    ball.y = 63
-    ball.dx = dir * ball_speed
-    ball.dy = 0
+  ball.x = 63
+  ball.y = 63
+  ball.dx = dir * ball_speed
+  ball.dy = 0
 end
 
 function _update60()
-    ball.x += ball.dx
-    ball.y += ball.dy
+  ball.x += ball.dx
+  ball.y += ball.dy
 
-    if (8 < p1.y) then
-        if (btn(2, 0)) p1.y -= p1.speed
-    end
-    if (p1.y < 104) then
-        if (btn(3, 0)) p1.y += p1.speed
-    end
+  if (8 < p1.y) then
+    if (btn(2, 0)) p1.y -= p1.speed
+  end
+  if (p1.y < 104) then
+    if (btn(3, 0)) p1.y += p1.speed
+  end
 
-    if (8 < p2.y) then
-        if (btn(2, 1)) p2.y -= p2.speed
-    end
-    if (p2.y < 104) then
-        if (btn(3, 1)) p2.y += p2.speed
-    end
+  if (8 < p2.y) then
+    if (btn(2, 1)) p2.y -= p2.speed
+  end
+  if (p2.y < 104) then
+    if (btn(3, 1)) p2.y += p2.speed
+  end
 
-    local collision_vector = collision_ball(ball)
-    if collision_vector then
-        if collision_vector.flags then
-            if flag_on(collision_vector.flags, flags.goal_p1) then
-                p2.score += 1
-                reset_ball(ball, -1)
-            elseif flag_on(collision_vector.flags, flags.goal_p2) then
-                p1.score += 1
-                reset_ball(ball, 1)
-            elseif flag_on(collision_vector.flags, flags.destroyable) then
-                printh("destroyable!!")
-            end
-        end
-        bounce(ball, collision_vector)
+  local collision_vector = collision_ball(ball)
+  if collision_vector then
+    if collision_vector.flags then
+      if flag_on(collision_vector.flags, flags.goal_p1) then
+        p2.score += 1
+        reset_ball(ball, -1)
+      elseif flag_on(collision_vector.flags, flags.goal_p2) then
+        p1.score += 1
+        reset_ball(ball, 1)
+      elseif flag_on(collision_vector.flags, flags.destroyable) then
+        printh("destroyable!!")
+      end
     end
+    bounce(ball, collision_vector)
+  end
 end
 
 function _draw()
-    cls()
-    map(map_offset.x, map_offset.y, 0, 0, 16, 16, shl(1, flags.visible))
-    spr(ball.sprite, ball.x, ball.y)
-    spr(p1.sprite, p1.x, p1.y, 1, 2)
-    spr(p2.sprite, p2.x, p2.y, 1, 2, true)
-    print("p1 "
-     ..p1.score
-     .."  |  p2 "
-     ..p2.score, 35, 1)
+  cls()
+  map(map_offset.x, map_offset.y, 0, 0, 16, 16, shl(1, flags.visible))
+  spr(ball.sprite, ball.x, ball.y)
+  spr(p1.sprite, p1.x, p1.y, 1, 2)
+  spr(p2.sprite, p2.x, p2.y, 1, 2, true)
+  print("p1 "
+   ..p1.score
+   .."  |  p2 "
+   ..p2.score, 35, 1)
 end
 
 __gfx__
