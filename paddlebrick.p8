@@ -150,7 +150,6 @@ function wall_bounce_vector(ball, wall)
   }
 end
 
-
 function collision_ball(ball)
   local collision = collision_paddle(ball.x, ball.y, ball.dx, ball.dy, p1)
   if (collision) return paddle_bounce_vector(ball, p1)
@@ -177,6 +176,18 @@ function collision_ball(ball)
   if (collision) return wall_bounce_vector(ball, collision)
 end
 
+function paddle_wall_collision(paddle)
+  local collision = collision_check(paddle.x, paddle.y, 0, paddle.dy)
+  if (collision) return true
+  collision = collision_check(paddle.x + paddle.width, paddle.y, 0, paddle.dy)
+  if (collision) return true
+  collision = collision_check(paddle.x, paddle.y + paddle.height, 0, paddle.dy)
+  if (collision) return true
+  collision = collision_check(paddle.x + paddle.width, paddle.y + paddle.height, 0, paddle.dy)
+  if (collision) return true
+  return false
+end
+
 function reset_ball(ball, dir)
   ball.x = 63
   ball.y = 63
@@ -185,19 +196,22 @@ function reset_ball(ball, dir)
 end
 
 function process_input(player_number, paddle)
-  if (8 < paddle.y) then
-    if (btn(2, player_number)) paddle.y -= paddle.speed
-  end
-  if (paddle.y < 104) then
-    if (btn(3, player_number)) paddle.y += paddle.speed
+  if btn(2, player_number) then
+    paddle.dy = -paddle.speed
+  elseif btn(3, player_number) then
+    paddle.dy = paddle.speed
+  else
+    paddle.dy = 0
   end
 end
 
 function move_ai(paddle, ball)
   if ball.y + ball.diameter / 2 > paddle.y + paddle.height / 2 then
-    paddle.y += paddle.speed
+    paddle.dy = paddle.speed
   elseif ball.y + ball.diameter / 2 < paddle.y + paddle.height / 2 then
-    paddle.y -= paddle.speed
+    paddle.dy = -paddle.speed
+  else
+    paddle.dy = 0
   end
 end
 
@@ -225,6 +239,9 @@ function _update60()
   else
     process_input(1, p2)
   end
+
+  if (not paddle_wall_collision(p1)) p1.y += p1.dy
+  if (not paddle_wall_collision(p2)) p2.y += p2.dy
 
   local collision_vector = collision_ball(ball)
   if collision_vector then
