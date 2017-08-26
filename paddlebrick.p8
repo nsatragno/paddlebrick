@@ -3,7 +3,7 @@ version 8
 __lua__
 -- paddlebrick
 -- toti and nina
-flags = {solid = 0, visible = 1, goal_p1 = 2, goal_p2 = 3, destroyable = 4}
+flags = {solid = 0, visible = 1, goal_p1 = 2, goal_p2 = 3, destructible = 4}
 
 function set_level(new_level)
   local max_level = 12
@@ -58,6 +58,8 @@ function init()
     sprite = 2
   }
   pause_counter = 60 * 3
+  -- Reload the map.
+  reload(0x2000, 0x2000, 0x1000)
 end
 
 init()
@@ -301,8 +303,7 @@ function _update60()
         reset_ball(ball, 1)
         sfx(2)
         return
-      elseif flag_on(collision_vector.flags, flags.destroyable) then
-        -- destroyable
+      elseif flag_on(collision_vector.flags, flags.destructible) then
         destroy_block(collision_vector.x, collision_vector.y)
       else
         sfx(1)
