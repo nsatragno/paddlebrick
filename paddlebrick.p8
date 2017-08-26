@@ -205,10 +205,30 @@ function process_input(player_number, paddle)
   end
 end
 
-function move_ai(paddle, ball)
+function move_ai_v1(paddle, ball)
   if ball.y + ball.diameter / 2 > paddle.y + paddle.height / 2 then
     paddle.dy = paddle.speed
   elseif ball.y + ball.diameter / 2 < paddle.y + paddle.height / 2 then
+    paddle.dy = -paddle.speed
+  else
+    paddle.dy = 0
+  end
+end
+
+function move_ai_v2(paddle, ball)
+  if (not paddle.hit_point) paddle.hit_point = paddle.height / 2
+
+  -- TODO(nina): refactor maybe?.
+  if collision_paddle(ball.x, ball.y, ball.dx, ball.dy, paddle) or
+     collision_paddle(ball.x, ball.y + ball.diameter, ball.dx, ball.dy, paddle) or
+     collision_paddle(ball.x + ball.diameter, ball.y, ball.dx, ball.dy, paddle) or
+     collision_paddle(ball.x + ball.diameter, ball.y + ball.diameter, ball.dx, ball.dy, paddle) then
+    paddle.hit_point = rnd(paddle.height + ball.diameter) - ball.diameter / 2
+  end
+
+  if ball.y + ball.diameter / 2 > paddle.y + paddle.hit_point then
+    paddle.dy = paddle.speed
+  elseif ball.y + ball.diameter / 2 < paddle.y + paddle.hit_point then
     paddle.dy = -paddle.speed
   else
     paddle.dy = 0
@@ -219,12 +239,13 @@ function _update60()
   if level_select then
     if (btnp(0, 0)) set_level(level - 1)
     if (btnp(1, 0)) set_level(level + 1)
-    if btnp(2, 0) or btnp(3, 0) then
-      if players == 1 then
-        players = 2
-      else
-        players = 1
-      end
+    if (btnp(2, 0)) players += 1
+    if (btnp(3, 0)) players -= 1
+
+    if players > 2 then
+      players = 0
+    elseif players < 0 then
+      players = 2
     end
     if (btnp(4, 0)) level_select = false
     return
@@ -233,9 +254,13 @@ function _update60()
   ball.x += ball.dx
   ball.y += ball.dy
 
-  process_input(0, p1)
-  if players == 1 then
-    move_ai(p2, ball)
+  if players == 0 then
+    move_ai_v1(p1, ball)
+  else
+    process_input(0, p1)
+  end
+  if players < 2 then
+    move_ai_v2(p2, ball)
   else
     process_input(1, p2)
   end
@@ -272,8 +297,9 @@ function _draw()
 
   if level_select then
     local game
-    if (players == 1) game = "    vs ai    "
-    if (players == 2) game = "2 player game"
+    if (players == 0) game = "  ai vs ai  "
+    if (players == 1) game = "  p1 vs ai  "
+    if (players == 2) game = "  p1 vs p2  "
     print("level select", 45, 20)
     print("‹ "..level.." ‘", 55, 30)
     print("” "..game.." ƒ", 30, 40)
