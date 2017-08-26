@@ -57,6 +57,7 @@ function init()
     diameter = 8,
     sprite = 2
   }
+  pause_counter = 60 * 3
 end
 
 init()
@@ -193,6 +194,7 @@ function reset_ball(ball, dir)
   ball.y = 63
   ball.dx = dir * ball_speed
   ball.dy = 0
+  pause_counter = 60 * 3
 end
 
 function process_input(player_number, paddle)
@@ -251,9 +253,6 @@ function _update60()
     return
   end
 
-  ball.x += ball.dx
-  ball.y += ball.dy
-
   if players == 0 then
     move_ai_v1(p1, ball)
   else
@@ -267,6 +266,14 @@ function _update60()
 
   if (not paddle_wall_collision(p1)) p1.y += p1.dy
   if (not paddle_wall_collision(p2)) p2.y += p2.dy
+
+  if pause_counter > 0 then
+    pause_counter -= 1
+    return
+  end
+
+  ball.x += ball.dx
+  ball.y += ball.dy
 
   local collision_vector = collision_ball(ball)
   if collision_vector then
@@ -311,6 +318,8 @@ function _draw()
    ..p1.score
    .."  |  p2 "
    ..p2.score, 42, 1)
+
+  if (pause_counter != 0) print(flr(pause_counter / 60) + 1, 63, 100)
 end
 
 __gfx__
