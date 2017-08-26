@@ -253,6 +253,11 @@ function _update60()
     return
   end
 
+  if p1.score >= 10 or p2.score >= 10 then
+    if (btnp(4, 0)) init()
+    return
+  end
+
   if players == 0 then
     move_ai_v1(p1, ball)
   else
@@ -320,12 +325,21 @@ function _draw()
 
     return
   end
+
+  if p1.score >= 10 then
+    print("player 1 wins", 45, 20)
+    print(" to restart", 44, 30)
+  elseif p2.score >= 10 then
+    print("player 2 wins", 45, 20)
+    print(" to restart", 44, 30)
+  else
+    if (pause_counter > 0) print(flr(pause_counter / 60) + 1, 63, 100)
+  end
+
   print("p1 "
    ..p1.score
    .."  |  p2 "
    ..p2.score, 42, 1)
-
-  if (pause_counter != 0) print(flr(pause_counter / 60) + 1, 63, 100)
 end
 
 __gfx__
