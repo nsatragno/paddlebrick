@@ -28,6 +28,7 @@ function init()
 
   base_speed = 1
   ball_speed = 2.5
+  players = 1
   p1 = {
     x = 0,
     y = 63,
@@ -183,29 +184,46 @@ function reset_ball(ball, dir)
   ball.dy = 0
 end
 
+function process_input(player_number, paddle)
+  if (8 < paddle.y) then
+    if (btn(2, player_number)) paddle.y -= paddle.speed
+  end
+  if (paddle.y < 104) then
+    if (btn(3, player_number)) paddle.y += paddle.speed
+  end
+end
+
+function move_ai(paddle, ball)
+  if ball.y + ball.diameter / 2 > paddle.y + paddle.height / 2 then
+    paddle.y += paddle.speed
+  elseif ball.y + ball.diameter / 2 < paddle.y + paddle.height / 2 then
+    paddle.y -= paddle.speed
+  end
+end
+
 function _update60()
   if level_select then
     if (btnp(0, 0)) set_level(level - 1)
     if (btnp(1, 0)) set_level(level + 1)
-    if (btnp(5, 0)) level_select = false
+    if btnp(2, 0) or btnp(3, 0) then
+      if players == 1 then
+        players = 2
+      else
+        players = 1
+      end
+    end
+    if (btnp(4, 0)) level_select = false
     return
   end
 
   ball.x += ball.dx
   ball.y += ball.dy
 
-  if (8 < p1.y) then
-    if (btn(2, 0)) p1.y -= p1.speed
-  end
-  if (p1.y < 104) then
-    if (btn(3, 0)) p1.y += p1.speed
-  end
-
-  if (8 < p2.y) then
-    if (btn(2, 1)) p2.y -= p2.speed
-  end
-  if (p2.y < 104) then
-    if (btn(3, 1)) p2.y += p2.speed
+  process_input(0, p1)
+  if players == 1 then
+    move_ai(p2, ball)
+  else
+    process_input(1, p2)
   end
 
   local collision_vector = collision_ball(ball)
@@ -236,8 +254,14 @@ function _draw()
   spr(p2.sprite, p2.x, p2.y, 1, 2, true)
 
   if level_select then
+    local game
+    if (players == 1) game = "    vs ai    "
+    if (players == 2) game = "2 player game"
     print("level select", 45, 20)
-    print("< "..level.." >", 58, 30)
+    print("‹ "..level.." ‘", 55, 30)
+    print("” "..game.." ƒ", 30, 40)
+    print("Ž to start", 30, 100)
+
     return
   end
   print("p1 "
