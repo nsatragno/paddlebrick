@@ -272,9 +272,6 @@ function _update60()
     return
   end
 
-  ball.x += ball.dx
-  ball.y += ball.dy
-
   local collision_vector = collision_ball(ball)
   if collision_vector then
     if collision_vector.flags then
@@ -298,6 +295,9 @@ function _update60()
     end
     ball.dx = collision_vector.dx
     ball.dy = collision_vector.dy
+  else
+    ball.x += ball.dx
+    ball.y += ball.dy
   end
 end
 
