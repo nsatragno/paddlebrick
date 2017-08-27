@@ -21,6 +21,16 @@ function set_level(new_level)
   }
 end
 
+function reset_ball(ball, dir)
+  ball.x = 63
+  ball.y = 67
+  ball.dx = dir * ball_speed
+  ball.dy = 0
+  ball.diameter = 8
+  ball.sprite = 2
+  pause_counter = 60 * 3
+end
+
 function init()
   set_level(0)
 
@@ -49,16 +59,10 @@ function init()
     padding = 0,
     score = 0
   }
-  ball = {
-    x = 63,
-    y = 67,
-    dx = ball_speed,
-    dy = 0,
-    diameter = 8,
-    sprite = 2
-  }
-  pause_counter = 60 * 3
-  -- Reload the map.
+  ball = {}
+  reset_ball(ball, 1)
+
+  -- reload the map.
   reload(0x2000, 0x2000, 0x1000)
 end
 
@@ -96,13 +100,8 @@ function collision_check(x, y, dx, dy)
   if (not vertical_collision and not horizontal_collision) return nil
   if (vertical_collision and not horizontal_collision) return { x = 1, y = 0, flags = vertical_collision }
   if (not vertical_collision and horizontal_collision) return { x = 0, y = 1, flags = horizontal_collision }
-  if (dx * dy > 0) return { x = -1, y = -1, flags = horizontal_collision }
 
-  return {
-    x = 1,
-    y = 1,
-    flags = horizontal_collision
-  }
+  return { x = sgn(dx), y = -sgn(dy), flags = horizontal_collision }
 end
 
 function collision_paddle(x, y, dx, dy, paddle)
@@ -193,14 +192,6 @@ function paddle_wall_collision(paddle)
   collision = collision_check(paddle.x + paddle.width, paddle.y + paddle.height, 0, paddle.dy)
   if (collision) return true
   return false
-end
-
-function reset_ball(ball, dir)
-  ball.x = 63
-  ball.y = 63
-  ball.dx = dir * ball_speed
-  ball.dy = 0
-  pause_counter = 60 * 3
 end
 
 function process_input(player_number, paddle)
@@ -313,10 +304,9 @@ function _update60()
     end
     ball.dx = collision_vector.dx
     ball.dy = collision_vector.dy
-  else
-    ball.x += ball.dx
-    ball.y += ball.dy
   end
+  ball.x += ball.dx
+  ball.y += ball.dy
 end
 
 function _draw()
