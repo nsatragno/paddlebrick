@@ -98,10 +98,31 @@ function collision_check(x, y, dx, dy)
   local horizontal_collision = solid(x + dx, y)
 
   if (not vertical_collision and not horizontal_collision) return nil
-  if (vertical_collision and not horizontal_collision) return { x = 1, y = 0, flags = vertical_collision }
-  if (not vertical_collision and horizontal_collision) return { x = 0, y = 1, flags = horizontal_collision }
+  if vertical_collision and not horizontal_collision then
+    return {
+      x = x,
+      y = y + dy,
+      dx = 1,
+      dy = 0,
+      flags = vertical_collision
+    }
+  elseif not vertical_collision and horizontal_collision then
+    return {
+      x = x + dx,
+      y = y,
+      dx = 0,
+      dy = 1,
+      flags = horizontal_collision
+    }
+  end
 
-  return { x = sgn(dx), y = -sgn(dy), flags = horizontal_collision }
+  return {
+    x = x + dx,
+    y = y + dy,
+    dx = sgn(dx),
+    dy = -sgn(dy),
+    flags = horizontal_collision
+  }
 end
 
 function collision_paddle(x, y, dx, dy, paddle)
@@ -143,13 +164,13 @@ function paddle_bounce_vector(ball, paddle)
 end
 
 function wall_bounce_vector(ball, wall, x, y)
-  local c = 2 * (ball.dx * wall.x + ball.dy * wall.y) /
-    (wall.x * wall.x + wall.y * wall.y)
+  local c = 2 * (ball.dx * wall.dx + ball.dy * wall.dy) /
+    (wall.dx * wall.dx + wall.dy * wall.dy)
   return {
-    dx = c * wall.x - ball.dx,
-    dy = c * wall.y - ball.dy,
-    x = x + ball.dx,
-    y = y + ball.dy,
+    dx = c * wall.dx - ball.dx,
+    dy = c * wall.dy - ball.dy,
+    x = wall.x,
+    y = wall.y,
     flags = wall.flags
   }
 end
