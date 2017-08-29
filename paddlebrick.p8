@@ -16,6 +16,10 @@ powerup_larger = {
   duration = 400
 }
 
+function powerup_larger:init(player)
+  player.power_up_timer = self.duration
+end
+
 function powerup_larger:action(player)
   if player.power_up_timer == 0 then
     player.power_up_timer = nil
@@ -23,11 +27,9 @@ function powerup_larger:action(player)
     return
   end
 
-  if (not player.power_up_timer) player.power_up_timer = self.duration
-
   if player.power_up_timer <= 8 then
     player.height -= 1
-  elseif player.power_up_timer > self.duration - 8 then
+  elseif player.height < 24 then
     player.height += 1
     if (paddle_wall_collision(player)) then
       player.y -= 1
@@ -38,6 +40,10 @@ function powerup_larger:action(player)
 end
 
 function powerup_larger:draw(player)
+  if player.power_up_timer != nil and player.power_up_timer > 400 - 64 then
+    print("extra large", 55, (64 - 400 + player.power_up_timer) * 2, rnd(16))
+    color(7)
+  end
   print("xl", player.x, 120)
 end
 
@@ -100,6 +106,7 @@ function init()
 
   ball = {}
   reset_ball(ball, 1)
+  color(7)
 
   -- reload the map.
   reload(0x2000, 0x2000, 0x1000)
@@ -297,6 +304,7 @@ end
 
 function power_up(player)
   player.powerup = powerup_larger
+  player.powerup:init(player)
 end
 
 function _update60()
