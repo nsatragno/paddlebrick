@@ -23,6 +23,11 @@ animations = {
 }
 
 function animations.destroy_block:play()
+  -- todo: this looks ok, but we may
+  -- want to have different instances
+  -- of the animation at the same time
+  -- so we play the full animation 
+  -- everytime we destroy a block.
   if self.duration <= 0 then
     mset(self.play_location_x, self.play_location_y, 0)
     self.duration = 40
