@@ -445,7 +445,6 @@ function draw_paddle(paddle, reflect)
 end
 
 function draw_background()
-  -- todo: do an actual implementation of parallax
   if background.speed < 0 then
     background.speed = 5
     if background.current_location >= background.limit - 10 then
